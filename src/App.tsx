@@ -245,6 +245,31 @@ export default function App() {
   const ringRadius = 50;
   const ringCircumference = 2 * Math.PI * ringRadius;
 
+  const currentScoreConfig = resultData ? (
+    resultData.score >= 80 ? {
+      stroke: "#10b981", // Emerald 500
+      badgeBg: "#ecfdf5", // Emerald 50
+      badgeText: "#047857", // Emerald 700
+      badgeBorder: "rgba(167, 243, 208, 0.5)", // Emerald 200 light
+      textClass: "text-emerald-600",
+      label: "최적 등급"
+    } : resultData.score >= 60 ? {
+      stroke: "#f59e0b", // Amber 500
+      badgeBg: "#fffbeb", // Amber 50
+      badgeText: "#b45309", // Amber 700
+      badgeBorder: "rgba(253, 230, 138, 0.5)", // Amber 200 light
+      textClass: "text-amber-600",
+      label: "보완 등급"
+    } : {
+      stroke: "#ef4444", // Red 500
+      badgeBg: "#fff1f2", // Rose 50
+      badgeText: "#991b1b", // Rose 800
+      badgeBorder: "rgba(254, 205, 211, 0.5)", // Rose 200 light
+      textClass: "text-rose-500",
+      label: "조치 시급"
+    }
+  ) : null;
+
   return (
     <div className="min-h-screen bg-slate-50 text-slate-800 antialiased bg-mesh font-sans">
       <div className="mx-auto max-w-4xl px-4 py-8 md:py-16">
@@ -624,21 +649,23 @@ export default function App() {
                     <div className="relative flex items-center justify-center my-4">
                       {/* SVG Ring layout */}
                       <svg className="w-32 h-32 transform -rotate-90">
-                        {/* Underlay layer */}
+                        {/* Underlay layer with white background fill */}
                         <circle
                           cx="64"
                           cy="64"
                           r={ringRadius}
-                          className="fill-none"
-                          style={{ stroke: "#e2e8f0" }}
+                          fill="#ffffff"
+                          stroke="#e2e8f0"
                           strokeWidth="10"
+                          style={{ stroke: "#e2e8f0", fill: "#ffffff" }}
                         />
                         {/* Progress overlay */}
                         <circle
                           cx="64"
                           cy="64"
                           r={ringRadius}
-                          className="fill-none transition-all duration-1000"
+                          fill="none"
+                          stroke={currentScoreConfig?.stroke || "#10b981"}
                           strokeWidth="10"
                           strokeLinecap="round"
                           strokeDasharray={ringCircumference}
@@ -646,7 +673,13 @@ export default function App() {
                             ringCircumference -
                             (resultData.score / 100) * ringCircumference
                           }
-                          style={{ stroke: "#10b981" }}
+                          className={savingImage ? "" : "transition-all duration-1000"}
+                          style={{ 
+                            stroke: currentScoreConfig?.stroke || "#10b981",
+                            fill: "none",
+                            strokeDasharray: ringCircumference,
+                            strokeDashoffset: ringCircumference - (resultData.score / 100) * ringCircumference
+                          }}
                         />
                       </svg>
                       {/* Floating Text box */}
@@ -662,19 +695,19 @@ export default function App() {
                       <span 
                         className="inline-block px-2.5 py-0.5 rounded-full text-[10px] font-bold mb-1 border"
                         style={{ 
-                          backgroundColor: "#d1fae5", 
-                          color: "#065f46", 
-                          borderColor: "rgba(167, 243, 208, 0.5)" 
+                          backgroundColor: currentScoreConfig?.badgeBg || "#d1fae5", 
+                          color: currentScoreConfig?.badgeText || "#065f46", 
+                          borderColor: currentScoreConfig?.badgeBorder || "rgba(167, 243, 208, 0.5)" 
                         }}
                       >
-                        {resultData.score >= 80 ? "최적 등급" : resultData.score >= 60 ? "보완 등급" : "조치 시급"}
+                        {currentScoreConfig?.label}
                       </span>
                     </div>
                   </div>
 
                   <div className="md:col-span-8 flex flex-col justify-center">
                     <h3 className="text-xs font-extrabold uppercase tracking-widest mb-2 flex items-center gap-1.5" style={{ color: "#94a3b8" }}>
-                      <Activity className="h-3.5 w-3.5" style={{ color: "#10b981" }} />
+                      <Activity className="h-3.5 w-3.5" style={{ color: currentScoreConfig?.stroke || "#10b981" }} />
                       성장 핵심 평가 요약
                     </h3>
                     <p className="text-sm font-semibold leading-relaxed mb-4 pr-2" style={{ color: "#1e293b" }}>
@@ -714,14 +747,14 @@ export default function App() {
                 {/* Algorithmic Detailed Diagnosis Breakdown (5 Customized Steps) */}
                 <div className="mb-8 space-y-6">
                   <h3 className="text-sm font-black uppercase tracking-wider border-b pb-2 mb-4 flex items-center gap-2" style={{ color: "#0f172a", borderColor: "#f1f5f9" }}>
-                    <FileText className="h-4 w-4" style={{ color: "#10b981" }} />
+                    <FileText className="h-4 w-4" style={{ color: currentScoreConfig?.stroke || "#10b981" }} />
                     네이버 플레이스 정밀 상태 진단지
                   </h3>
 
                   {/* Step 1: 현재 점수 및 예상 순위 */}
                   <div className="rounded-xl border border-slate-200 bg-white p-5 shadow-sm">
                     <div className="flex items-center gap-2 mb-3">
-                      <span className="flex h-6 w-6 items-center justify-center rounded-lg bg-emerald-500 text-xs font-bold text-white">1</span>
+                      <span className="flex h-6 w-6 items-center justify-center rounded-lg text-xs font-bold text-white" style={{ backgroundColor: currentScoreConfig?.stroke || "#10b981" }}>1</span>
                       <h4 className="text-sm font-black text-slate-800">현재 점수 및 예상 순위</h4>
                     </div>
                     <div className="grid gap-3 sm:grid-cols-3">
@@ -731,7 +764,7 @@ export default function App() {
                       </div>
                       <div className="bg-slate-50/55 rounded-lg p-3 border border-slate-100">
                         <span className="block text-[10px] font-bold text-slate-400 mb-1">플레이스 점수</span>
-                        <span className="text-sm font-black text-emerald-600">{resultData.score}점</span>
+                        <span className="text-sm font-black" style={{ color: currentScoreConfig?.stroke || "#10b981" }}>{resultData.score}점</span>
                       </div>
                       <div className="bg-slate-50/55 rounded-lg p-3 border border-slate-100">
                         <span className="block text-[10px] font-bold text-slate-400 mb-1">예상 노출 순위</span>
