@@ -1,0 +1,8 @@
+{
+  "name": "Remix: 플레이스 진단기",
+  "description": "네이버 스마트플레이스 SEO 알고리즘 기반 매장 노출 지수 분석 및 맞춤형 가산점 개선 전술 솔루션",
+  "requestFramePermissions": [],
+  "majorCapabilities": [
+    "MAJOR_CAPABILITY_SERVER_SIDE_GEMINI_API"
+  ]
+}

@@ -1,0 +1,93 @@
+@import url("https://cdn.jsdelivr.net/gh/orioncactus/pretendard@v1.3.9/dist/web/static/pretendard.min.css");
+@import "tailwindcss";
+
+@theme {
+  --font-sans: "Pretendard", -apple-system, BlinkMacSystemFont, system-ui, Roboto, "Helvetica Neue", "Segoe UI", "Apple SD Gothic Neo", "Noto Sans KR", "Malgun Gothic", sans-serif;
+
+  /* Classic HEX colors overrides for Tailwind CSS v4 to prevent html2canvas oklch parsing crash */
+  --color-slate-50: #f8fafc;
+  --color-slate-100: #f1f5f9;
+  --color-slate-200: #e2e8f0;
+  --color-slate-300: #cbd5e1;
+  --color-slate-400: #94a3b8;
+  --color-slate-500: #64748b;
+  --color-slate-600: #475569;
+  --color-slate-700: #334155;
+  --color-slate-800: #1e293b;
+  --color-slate-900: #0f172a;
+  --color-slate-950: #020617;
+
+  --color-emerald-50: #ecfdf5;
+  --color-emerald-100: #d1fae5;
+  --color-emerald-200: #a7f3d0;
+  --color-emerald-300: #6ee7b7;
+  --color-emerald-400: #34d399;
+  --color-emerald-500: #10b981;
+  --color-emerald-600: #059669;
+  --color-emerald-700: #047857;
+  --color-emerald-800: #065f46;
+  --color-emerald-900: #064e3b;
+  --color-emerald-950: #022c22;
+
+  --color-amber-50: #fffbeb;
+  --color-amber-100: #fef3c7;
+  --color-amber-200: #fde68a;
+  --color-amber-500: #f59e0b;
+  --color-amber-800: #92400e;
+
+  --color-rose-50: #fff1f2;
+  --color-rose-100: #ffe4e6;
+  --color-rose-200: #fecdd3;
+  --color-rose-500: #f43f5e;
+  --color-rose-800: #991b1b;
+  --color-rose-950: #4c0519;
+
+  --color-indigo-50: #f5f3ff;
+  --color-indigo-100: #e0e7ff;
+  --color-indigo-500: #6366f1;
+
+  --color-red-450: #f87171;
+  --color-red-400: #f87171;
+  --color-red-500: #ef4444;
+  --color-red-600: #dc2626;
+
+  --color-green-500: #22c55e;
+  --color-green-600: #16a34a;
+  --color-green-700: #15803d;
+}
+
+/* Classic CSS fallbacks for transparent/alpha colors inside modern capture box to avoid oklch compilation */
+.cap-bg-glow {
+  background-color: rgba(16, 185, 129, 0.08) !important;
+}
+
+.cap-bg-emerald-light {
+  background-color: rgba(16, 185, 129, 0.06) !important;
+}
+
+.cap-bg-rose-light {
+  background-color: rgba(244, 63, 94, 0.06) !important;
+}
+
+.cap-bg-amber-light {
+  background-color: rgba(245, 158, 11, 0.06) !important;
+}
+
+.cap-bg-slate-light {
+  background-color: rgba(248, 250, 252, 0.5) !important;
+}
+
+.cap-border-emerald-200-50 {
+  border-color: rgba(167, 243, 208, 0.5) !important;
+}
+
+.cap-border-emerald-100-50 {
+  border-color: rgba(209, 250, 229, 0.5) !important;
+}
+
+/* Custom background animations or glowing spots if appropriate */
+.bg-mesh {
+  background-color: #f8fafc;
+  background-image: radial-gradient(at 0% 0%, rgba(0, 199, 60, 0.05) 0px, transparent 50%),
+                    radial-gradient(at 100% 100%, rgba(0, 122, 255, 0.03) 0px, transparent 50%);
+}
