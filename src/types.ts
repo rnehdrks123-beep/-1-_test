@@ -37,4 +37,8 @@ export interface DiagnosisResult {
   
   // 5. 2일 차 예고: 리뷰/평판 정밀 분석
   day2Preview: string;
+
+  // Hybrid failover metrics
+  isFallback?: boolean;
+  fallbackMsg?: string;
 }

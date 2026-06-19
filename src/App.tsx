@@ -590,6 +590,16 @@ export default function App() {
               transition={{ duration: 0.5, type: "spring" }}
               className="mt-10"
             >
+              {resultData.isFallback && (
+                <div className="mb-4 rounded-xl border border-amber-200 bg-amber-50/70 p-4 text-xs leading-relaxed text-amber-800 shadow-sm flex items-start gap-2.5">
+                  <span className="flex h-5 w-5 shrink-0 items-center justify-center rounded-lg bg-amber-500 text-[10px] font-bold text-white uppercase tracking-wider">AI</span>
+                  <div>
+                    <strong className="block font-bold mb-0.5 text-amber-900">하이브리드 로컬 정밀 로직 전환 완료</strong>
+                    {resultData.fallbackMsg || "스마트 제미나이 AI 서버의 순간 접속량이 폭증하여, 대기 없이 작동 설계된 '하이브리드 로컬 진단 모델'로 중단 없는 정밀 분석을 완료했습니다."}
+                  </div>
+                </div>
+              )}
+
               {/* High precision printable diagnostic card container with hex values to prevent oklch crashes */}
               <div
                 id="capture"
