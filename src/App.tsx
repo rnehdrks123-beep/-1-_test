@@ -206,6 +206,82 @@ export default function App() {
     }, 1800);
   };
 
+  // Helper to safely execute a callback with window.getComputedStyle patched to prevent html2canvas / html-to-image oklch/oklab crashes
+  const withOklchProtection = async <T,>(callback: () => Promise<T> | T): Promise<T> => {
+    const originalGetComputedStyle = window.getComputedStyle;
+    const originalGetPropertyValue = CSSStyleDeclaration.prototype.getPropertyValue;
+
+    const cleanOklch = (val: string): string => {
+      if (!val || typeof val !== "string") return val;
+      if (val.includes("oklch") || val.includes("oklab")) {
+        return val.replace(/(oklch|oklab)\([^)]+\)/g, (match) => {
+          const alphaMatch = match.match(/\/[:\s]*([0-9.]+)/);
+          const alpha = alphaMatch ? parseFloat(alphaMatch[1]) : 1;
+          const nums = match.match(/[0-9.]+/g);
+          if (nums && nums.length >= 1) {
+            const lightness = parseFloat(nums[0]);
+            if (lightness > 0.85) {
+              return `rgba(255, 255, 255, ${alpha})`;
+            } else if (lightness < 0.2) {
+              return `rgba(15, 23, 42, ${alpha})`;
+            }
+          }
+          return `rgba(100, 116, 139, ${alpha})`;
+        });
+      }
+      return val;
+    };
+
+    // Patch CSSStyleDeclaration.prototype.getPropertyValue safely with try-catch and unwrap check
+    CSSStyleDeclaration.prototype.getPropertyValue = function (this: any, property: string): string {
+      try {
+        const target = (this && this.__target__) || this;
+        const originalVal = originalGetPropertyValue.call(target, property);
+        return cleanOklch(originalVal);
+      } catch (err) {
+        return "";
+      }
+    };
+
+    // Patch window.getComputedStyle safely binding the window context
+    window.getComputedStyle = function (elt: Element, pseudoElt?: string | null): CSSStyleDeclaration {
+      const style = originalGetComputedStyle.call(window, elt, pseudoElt);
+      return new Proxy(style, {
+        get(target, prop) {
+          if (prop === "__target__") {
+            return target;
+          }
+          if (prop === "getPropertyValue") {
+            return (propertyName: string) => {
+              try {
+                const originalVal = target.getPropertyValue(propertyName);
+                return cleanOklch(originalVal);
+              } catch (err) {
+                return "";
+              }
+            };
+          }
+          const val = Reflect.get(target, prop);
+          if (typeof val === "function") {
+            return val.bind(target);
+          }
+          if (typeof val === "string") {
+            return cleanOklch(val);
+          }
+          return val;
+        },
+      }) as unknown as CSSStyleDeclaration;
+    };
+
+    try {
+      return await callback();
+    } finally {
+      // Restore original functions
+      window.getComputedStyle = originalGetComputedStyle;
+      CSSStyleDeclaration.prototype.getPropertyValue = originalGetPropertyValue;
+    }
+  };
+
   // Save screen card to image via html2canvas
   const handleSaveImage = () => {
     if (!captureRef.current) return;
@@ -226,11 +302,13 @@ export default function App() {
 
     // Let the loader settle slight animations
     setTimeout(() => {
-      toPng(captureRef.current!, {
-        pixelRatio: 2, // Retain crystal high-resolution details
-        backgroundColor: "#ffffff",
-        cacheBust: true,
-      })
+      withOklchProtection(() =>
+        toPng(captureRef.current!, {
+          pixelRatio: 2, // Retain crystal high-resolution details
+          backgroundColor: "#ffffff",
+          cacheBust: true,
+        })
+      )
         .then((imgUrl) => {
           setDownloadedImage(imgUrl); // Store in preview state so the user can verify the file directly in browser
 
@@ -284,13 +362,15 @@ export default function App() {
 
     try {
       const element = captureRef.current;
-      const canvas = await html2canvas(element, {
-        scale: 2.5, // 2.5x high-definition scale for ultra-clear text rendering
-        useCORS: true,
-        allowTaint: true,
-        backgroundColor: "#ffffff",
-        logging: false,
-      });
+      const canvas = await withOklchProtection(() =>
+        html2canvas(element, {
+          scale: 2.5, // 2.5x high-definition scale for ultra-clear text rendering
+          useCORS: true,
+          allowTaint: true,
+          backgroundColor: "#ffffff",
+          logging: false,
+        })
+      );
 
       const imgData = canvas.toDataURL("image/png");
       const pdf = new jsPDF("p", "mm", "a4");
@@ -1038,6 +1118,49 @@ export default function App() {
           )}
         </AnimatePresence>
       </div>
+
+      {/* Floating Image Save Button */}
+      <button
+        style={{
+          position: "fixed",
+          bottom: "20px",
+          right: "20px",
+          zIndex: 9999,
+          padding: "10px 15px",
+          background: "#000",
+          color: "#fff",
+          border: "none",
+          borderRadius: "8px",
+          cursor: "pointer",
+          fontWeight: "bold",
+          fontSize: "14px",
+          boxShadow: "0 4px 12px rgba(0, 0, 0, 0.15)",
+        }}
+        onClick={() => {
+          const el = document.querySelector("img, canvas") as HTMLImageElement | HTMLCanvasElement | null;
+          if (!el) {
+            alert("이미지를 찾을 수 없음");
+            return;
+          }
+
+          let url;
+          if (el.tagName === "CANVAS") {
+            url = (el as HTMLCanvasElement).toDataURL("image/png");
+          } else {
+            url = (el as HTMLImageElement).src;
+          }
+
+          const a = document.createElement("a");
+          a.href = url;
+          a.download = "image.png";
+          a.target = "_blank";
+          document.body.appendChild(a);
+          a.click();
+          document.body.removeChild(a);
+        }}
+      >
+        이미지 저장
+      </button>
     </div>
   );
 }
